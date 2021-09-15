@@ -109,14 +109,30 @@ int main()
 
     SetTargetFPS(60);
 
+
+    // Backgorund texture
+    Texture2D background = LoadTexture("textures/far-buildings.png");
+    float bgX{};
+
     while (!WindowShouldClose())
     {
         // Delta time (time since last frame)
         const float dt{GetFrameTime()};
 
+
         // Start drawing
         BeginDrawing();
         ClearBackground(WHITE);
+
+        bgX -= 20 * dt;
+        if(bgX <= -background.width * 2)
+            bgX = 0.0;
+
+        // Draw background
+        Vector2 bg1Pos{bgX, 0.0};
+        DrawTextureEx(background,bg1Pos, 0.0, 2.0, WHITE);
+        Vector2 bg2Pos{bgX + background.width * 2, 0.0};
+        DrawTextureEx(background, bg2Pos, 0.0, 2.0, WHITE);
 
 
         // Ground check
@@ -134,7 +150,6 @@ int main()
         }
 
 
-
         // Check for jumping
         if(IsKeyPressed(KEY_SPACE) && !isInAir)
             velocity += jumpVel;
@@ -145,6 +160,7 @@ int main()
             // Update nebula position
             nebulae[i].pos.x += nebulaVel * dt;
         }
+
 
         // Update scarfy position
         scarfyData.pos.y += velocity * dt;
@@ -177,6 +193,7 @@ int main()
     }
 
 
+    UnloadTexture(background);
     UnloadTexture(scarfy);
     UnloadTexture(nebula);
 
