@@ -11,6 +11,29 @@ struct AnimData
     float runningTime;
 };
 
+bool IsOnGround(AnimData data, int windowHeight)
+{
+    return data.pos.y >= windowHeight - data.rec.height;
+}
+
+AnimData UpdateAnimData(AnimData data, float deltaTime, int maxFrame)
+{
+    // Update running time
+    data.runningTime += deltaTime;
+    if(data.runningTime >= data.updateTime)
+    {
+        data.runningTime = 0.0;
+
+        // Update animation frame
+        data.rec.x = data.frame * data.rec.width;
+        data.frame++;
+        if(data.frame > maxFrame)
+            data.frame = 0;
+    }
+
+    return data;
+
+}
 
 int main()
 {
@@ -40,10 +63,10 @@ int main()
     */
 
 
-    // Array for nebula hazards
-    AnimData nebulae[3]{};
+    const int sizeOfNebulae{6};  // How many nebula hazards 
+    AnimData nebulae[sizeOfNebulae]{};      // Array for nebula hazards
 
-    for(int i = 0; i < 3; i++)
+    for(int i = 0; i < sizeOfNebulae; i++)
     {
         nebulae[i].rec.x = 0.0;
         nebulae[i].rec.y = 0.0;
@@ -54,9 +77,12 @@ int main()
         nebulae[i].runningTime = 0.0;
     }
 
-    nebulae[0].pos.x = windowDimensions[0];
-    nebulae[1].pos.x = windowDimensions[0] + 300;
-    nebulae[2].pos.x = windowDimensions[0] + 600;
+    int start{0};
+    for(int i = 0; i < sizeOfNebulae; i++)
+    {
+        nebulae[i].pos.x = windowDimensions[0] + start;
+        start += 300;
+    }
 
     // Nebula velocity (pixel/senconds)
     int nebulaVel{-200};
@@ -94,7 +120,7 @@ int main()
 
 
         // Ground check
-        if(scarfyData.pos.y >= windowDimensions[1] - scarfyData.rec.height)
+        if(IsOnGround(scarfyData, windowDimensions[1]))
         {
             // Rectangle is on the ground
             velocity = 0;
@@ -114,7 +140,7 @@ int main()
             velocity += jumpVel;
         
 
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < sizeOfNebulae; i++)
         {
             // Update nebula position
             nebulae[i].pos.x += nebulaVel * dt;
@@ -126,38 +152,13 @@ int main()
         // Update scrafy animation frame
         if(!isInAir)
         {
-            // Update running time
-            scarfyData.runningTime += dt;
-
-            if (scarfyData.runningTime >= scarfyData.updateTime)
-            {
-                scarfyData.runningTime = 0.0;
-
-                // Update animation frame
-                scarfyData.rec.x = scarfyData.frame * scarfyData.rec.width;
-                scarfyData.frame++;
-
-                if(scarfyData.frame > 5)
-                    scarfyData.frame = 0;
-            }
+            scarfyData = UpdateAnimData(scarfyData, dt, 5);
         }
 
 
-        for(int i = 0; i < 3; i++)
+        for(int i = 0; i < sizeOfNebulae; i++)
         {
-            // Update nebula animation frame
-            nebulae[i].runningTime += dt;
-
-            if (nebulae[i].runningTime >= nebulae[i].updateTime)
-            {
-                nebulae[i].runningTime = 0.0;
-
-                nebulae[i].rec.x = nebulae[i].frame * nebulae[i].rec.width;
-                nebulae[i].frame++;
-
-                if(nebulae[i].frame > 7)
-                    nebulae[i].frame = 0;
-            }
+            nebulae[i] = UpdateAnimData(nebulae[i], dt, 7);
         }
         
         
@@ -166,10 +167,10 @@ int main()
 
 
         // Draw hazards
-        DrawTextureRec(nebula, nebulae[0].rec, nebulae[0].pos, WHITE);
-        DrawTextureRec(nebula, nebulae[1].rec, nebulae[1].pos, WHITE);
-        DrawTextureRec(nebula, nebulae[2].rec, nebulae[2].pos, WHITE);
-
+        for (int i = 0; i < sizeOfNebulae; i++)
+        {
+            DrawTextureRec(nebula, nebulae[i].rec, nebulae[i].pos, WHITE);
+        }
 
         // End drawing
         EndDrawing();
